@@ -52,50 +52,6 @@ class DailyCrawler:
             # 保存数据
             self.save_data(code, df_daily, self.daily, {'index': True})
 
-    def save_data(self, code, df_daily, collection, extra_fields=None):
-        """
-        将从网上抓取的数据保存到本地MongoDB中
-
-        :param code: 股票代码
-        :param df_daily: 包含日线数据的DataFrame
-        :param collection: 要保存的数据集
-        :param extra_fields: 除了K线数据中保存的字段，需要额外保存的字段
-        """
-
-        # 数据更新的请求列表
-        update_requests = []
-
-        # 将DataFrame中的行情数据，生成更新数据的请求
-        for df_index in df_daily.index:
-            # 将DataFrame中的一行数据转dict
-            doc = dict(df_daily.loc[df_index])
-            # 设置股票代码
-            doc['code'] = code
-
-            # 如果指定了其他字段，则更新dict
-            if extra_fields is not None:
-                doc.update(extra_fields)
-
-            # 生成一条数据库的更新请求
-            # 注意：
-            # 需要在code、date、index三个字段上增加索引，否则随着数据量的增加，
-            # 写入速度会变慢，创建索引的命令式：
-            # db.daily.createIndex({'code':1,'date':1,'index':1})
-            update_requests.append(
-                UpdateOne(
-                    {'code': doc['code'], 'date': doc['date'], 'index': doc['index']},
-                    {'$set': doc},
-                    upsert=True)
-            )
-
-        # 如果写入的请求列表不为空，则保存都数据库中
-        if len(update_requests) > 0:
-            # 批量写入到数据库中，批量写入可以降低网络IO，提高速度
-            update_result = collection.bulk_write(update_requests, ordered=False)
-            print('保存日线数据，代码： %s, 插入：%4d条, 更新：%4d条' %
-                  (code, update_result.upserted_count, update_result.modified_count),
-                  flush=True)
-
     def crawl(self, begin_date=None, end_date=None):
         """
         抓取股票的日K数据，主要包含了不复权和后复权两种
@@ -129,13 +85,57 @@ class DailyCrawler:
             df_daily_hfq = ts.get_k_data(code, autype='hfq', start=begin_date, end=end_date)
             self.save_data(code, df_daily_hfq, self.daily_hfq, {'index': False})
 
+    def save_data(self, code, df_daily, collection, extra_fields=None):
+        """
+        将从网上抓取的数据保存到本地MongoDB中
+
+        :param code: 股票代码
+        :param df_daily: 包含日线数据的DataFrame
+        :param collection: 要保存的数据集
+        :param extra_fields: 除了K线数据中保存的字段，需要额外保存的字段
+        """
+
+        # 数据更新的请求列表
+        update_requests = []
+
+        # 将DataFrame中的行情数据，生成更新数据的请求
+        for df_index in df_daily.index:
+            # 将DataFrame中的一行数据转dict
+            doc = dict(df_daily.loc[df_index])
+            # 设置股票代码
+            doc['code'] = code
+
+            # 如果指定了其他字段，则更新dict
+            if extra_fields is not None:
+                doc.update(extra_fields)
+
+            # 生成一条数据库的更新请求
+            # 注意：
+            # 需要在code、date、index三个字段上增加索引，否则随着数据量的增加，
+            # 写入速度会变慢，需要创建索引。创建索引需要在MongoDB-shell中执行命令式：
+            # db.daily.createIndex({'code':1,'date':1,'index':1},{'background':true})
+            # db.daily_hfq.createIndex({'code':1,'date':1,'index':1},{'background':true})
+            update_requests.append(
+                UpdateOne(
+                    {'code': doc['code'], 'date': doc['date'], 'index': doc['index']},
+                    {'$set': doc},
+                    upsert=True)
+            )
+        # 如果写入的请求列表不为空，则保存都数据库中
+        if len(update_requests) > 0:
+            # 批量写入到数据库中，批量写入可以降低网络IO，提高速度
+            update_result = collection.bulk_write(update_requests, ordered=False)
+            print('保存日线数据，代码： %s, 插入：%4d条, 更新：%4d条' %
+                  (code, update_result.upserted_count, update_result.modified_count),
+                  flush=True)
+
 
 # 抓取程序的入口函数
 if __name__ == '__main__':
     dc = DailyCrawler()
     # 抓取指定日期范围的指数日行情
     # 这两个参数可以根据需求改变，时间范围越长，抓取时花费的时间就会越长
-    dc.crawl_index('2015-01-01', '2015-12-31')
+    # dc.crawl_index('2015-01-01', '2015-12-31')
     # 抓取指定日期范围的股票日行情
     # 这两个参数可以根据需求改变，时间范围越长，抓取时花费的时间就会越长
     dc.crawl('2015-01-01', '2015-12-31')

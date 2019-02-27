@@ -4,10 +4,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from pymongo import DESCENDING
 
+from boll_factor import is_boll_break_up, is_boll_break_down
 from database import DB_CONN
+from fractal_factor import is_fractal_up, is_fractal_down
+from macd_factor import is_macd_dead, is_macd_gold
+from rsi_factor import is_rsi_over_bought, is_rsi_over_sold
 from stock_pool_strategy import stock_pool, find_out_stocks
 from stock_util import get_trading_dates
-from macd_factor import is_macd_dead, is_macd_gold
 
 """
 完成策略的回测，绘制以沪深300为基准的收益曲线，并计算策略评价指标：
@@ -379,7 +382,11 @@ def backtest(begin_date, end_date):
         # 检查是否有需要第二天卖出的股票
         # 持仓列表的股票，出现卖出信号
         for holding_code in holding_codes:
-            if is_macd_dead(holding_code, _date):
+            #if is_rsi_over_sold(holding_code, _date):
+            #if is_boll_break_up(holding_code, _date):
+            #if is_macd_gold(holding_code, _date):
+            #if is_fractal_up(holding_code, _date):
+            if is_k_down_break_ma10(holding_code, _date):
                 to_be_sold_codes.add(holding_code)
 
         # 检查是否有需要第二天买入的股票
@@ -387,7 +394,11 @@ def backtest(begin_date, end_date):
         if this_phase_codes is not None:
             # 在当前备选股里，但是非持仓股，并且出现了买入信号
             for _code in this_phase_codes:
-                if _code not in holding_codes and is_macd_gold(_code, _date):
+                #if _code not in holding_codes and is_rsi_over_bought(_code, _date):
+                #if _code not in holding_codes and is_boll_break_down(_code, _date):
+                #if _code not in holding_codes and is_macd_gold(_code, _date):
+                #if _code not in holding_codes and is_fractal_down(_code, _date):
+                if _code not in holding_codes and is_k_up_break_ma10(_code, _date):
                     to_be_bought_codes.add(_code)
 
         # 计算总资产
@@ -395,7 +406,7 @@ def backtest(begin_date, end_date):
 
         # 获取所有持仓股的当日收盘价
         holding_daily_cursor = DB_CONN['daily'].find(
-            {'code': {'$in': holding_codes}, 'date': _date},
+            {'code': {'$in': holding_codes}, 'date': _date, 'index':False},
             projection={'close': True, 'code': True}
         )
 

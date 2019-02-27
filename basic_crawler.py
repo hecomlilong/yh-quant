@@ -1,9 +1,10 @@
 #  -*- coding: utf-8 -*-
 
-
+import traceback
 from datetime import datetime, timedelta
 
 import tushare as ts
+from pandas.io import json
 from pymongo import UpdateOne
 
 from database import DB_CONN
@@ -56,13 +57,13 @@ def crawl_basic_at_date(date):
     # 初始化更新请求列表
     update_requests = []
     # 获取所有股票代码集合
-    codes = set(df_basics.index)
+    codes = list(set(df_basics.index))  #codes = list(set(df_basics.index))[:2]
     # 按照股票代码提取所有数据
     for code in codes:
         # 获取一只股票的数据
         doc = dict(df_basics.loc[code])
         try:
-            # 将上市日期，20180101转换为2018-01-01的形式
+            # API返回的数据中，上市日期是一个int类型。将上市日期，20180101转换为2018-01-01的形式
             time_to_market = datetime \
                 .strptime(str(doc['timeToMarket']), '%Y%m%d') \
                 .strftime('%Y-%m-%d')
@@ -86,13 +87,17 @@ def crawl_basic_at_date(date):
             })
 
             # 生成更新请求，需要按照code和date创建索引
+            # tushare
+            # numpy.int64/numpy.float64等数据类型，保存到mongodb时无法序列化。
+            # 解决办法：这里使用pandas.json强制转换成json字符串，然后再转换成dict。int64/float64转换成int,float
             update_requests.append(
                 UpdateOne(
                     {'code': code, 'date': date},
-                    {'$set': doc}, upsert=True))
+                    {'$set': json.loads(json.dumps(doc))}, upsert=True))
         except:
             print('发生异常，股票代码：%s，日期：%s' % (code, date), flush=True)
             print(doc, flush=True)
+            print(traceback.print_exc())
 
     # 如果抓到了数据
     if len(update_requests) > 0:

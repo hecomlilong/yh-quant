@@ -71,7 +71,6 @@ def fill_single_date_is_trading(date, collection_name):
     for daily in daily_cursor:
         # 当日成交量大于0，则为交易状态
         is_trading = daily['volume'] > 0
-
         update_requests.append(
             UpdateOne(
                 {'code': daily['code'], 'date': date, 'index': daily['index']},
@@ -243,7 +242,6 @@ def fill_au_factor_pre_close(begin_date, end_date):
             update_result = DB_CONN['daily'].bulk_write(update_requests, ordered=False)
             print('填充复权因子和前收，股票：%s，更新：%4d条' %
                   (code, update_result.modified_count), flush=True)
-
 
 if __name__ == '__main__':
     fill_au_factor_pre_close('2015-01-01', '2015-12-31')
