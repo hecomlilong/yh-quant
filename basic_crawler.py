@@ -62,7 +62,11 @@ def crawl_basic_at_date(date):
     for code in codes:
         # 获取一只股票的数据
         doc = dict(df_basics.loc[code])
+        print(doc)
+        quit()
         try:
+            if doc['timeToMarket'] == 0:
+                continue
             # API返回的数据中，上市日期是一个int类型。将上市日期，20180101转换为2018-01-01的形式
             time_to_market = datetime \
                 .strptime(str(doc['timeToMarket']), '%Y%m%d') \
@@ -108,4 +112,5 @@ def crawl_basic_at_date(date):
 
 
 if __name__ == '__main__':
-    crawl_basic('2017-01-01', '2017-12-31')
+    # crawl_basic('2017-01-01', '2017-12-31')
+    crawl_basic('2016-11-01', '2019-02-28')
