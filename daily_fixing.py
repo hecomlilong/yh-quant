@@ -244,6 +244,6 @@ def fill_au_factor_pre_close(begin_date, end_date):
                   (code, update_result.modified_count), flush=True)
 
 if __name__ == '__main__':
-    fill_au_factor_pre_close('2015-01-01', '2015-12-31')
-    fill_is_trading_between('2015-01-01', '2015-12-31')
-    fill_daily_k_at_suspension_days('2015-01-01', '2015-12-31')
+    fill_au_factor_pre_close('2011-01-01', '2019-02-28')
+    fill_is_trading_between('2011-01-01', '2019-02-28')
+    fill_daily_k_at_suspension_days('2011-01-01', '2019-02-28')
