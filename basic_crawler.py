@@ -62,8 +62,6 @@ def crawl_basic_at_date(date):
     for code in codes:
         # 获取一只股票的数据
         doc = dict(df_basics.loc[code])
-        print(doc)
-        quit()
         try:
             if doc['timeToMarket'] == 0:
                 continue
@@ -113,4 +111,4 @@ def crawl_basic_at_date(date):
 
 if __name__ == '__main__':
     # crawl_basic('2017-01-01', '2017-12-31')
-    crawl_basic('2016-11-01', '2019-02-28')
+    crawl_basic('2016-08-09', '2019-02-28')
