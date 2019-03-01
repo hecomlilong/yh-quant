@@ -89,6 +89,7 @@ def crawl_basic_at_date(date):
             })
 
             # 生成更新请求，需要按照code和date创建索引
+            # db.basic.createIndex({'code':1,'date':1},{'background':true})
             # tushare
             # numpy.int64/numpy.float64等数据类型，保存到mongodb时无法序列化。
             # 解决办法：这里使用pandas.json强制转换成json字符串，然后再转换成dict。int64/float64转换成int,float
