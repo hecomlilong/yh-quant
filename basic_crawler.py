@@ -9,6 +9,7 @@ from pymongo import UpdateOne
 
 from database import DB_CONN
 from stock_util import get_trading_dates
+import math
 
 """
 从tushare获取股票基础数据，保存到本地的MongoDB数据库中
@@ -63,11 +64,20 @@ def crawl_basic_at_date(date):
         # 获取一只股票的数据
         doc = dict(df_basics.loc[code])
         try:
-            if doc['timeToMarket'] == 0:
+            # not doc['timeToMarket'] for value == 0
+            # math.isnan(doc['timeToMarket']) for value is nan
+            # dtype of doc['timeToMarket'] can be: numpy.series float64
+            if not doc['timeToMarket'] or math.isnan(doc['timeToMarket']):
                 continue
+            pos = str(doc['timeToMarket']).find(".")
+            if pos >= 0:
+                local_time = str(doc['timeToMarket'])[0:pos]
+            else:
+                local_time = str(doc['timeToMarket'])
+
             # API返回的数据中，上市日期是一个int类型。将上市日期，20180101转换为2018-01-01的形式
             time_to_market = datetime \
-                .strptime(str(doc['timeToMarket']), '%Y%m%d') \
+                .strptime(local_time, '%Y%m%d') \
                 .strftime('%Y-%m-%d')
 
             # 将总股本和流通股本转为数字
@@ -99,6 +109,7 @@ def crawl_basic_at_date(date):
                     {'$set': json.loads(json.dumps(doc))}, upsert=True))
         except:
             print('发生异常，股票代码：%s，日期：%s' % (code, date), flush=True)
+            print(type(doc['timeToMarket']),flush=True)
             print(doc, flush=True)
             print(traceback.print_exc())
 
@@ -112,4 +123,4 @@ def crawl_basic_at_date(date):
 
 if __name__ == '__main__':
     # crawl_basic('2017-01-01', '2017-12-31')
-    crawl_basic('2016-08-09', '2019-02-28')
+    crawl_basic('2016-08-09', '2019-03-01')
