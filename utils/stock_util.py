@@ -2,7 +2,7 @@
 
 
 from pymongo import ASCENDING
-from database import DB_CONN
+from utils.database import DB_CONN
 from datetime import datetime, timedelta
 
 

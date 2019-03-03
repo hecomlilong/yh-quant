@@ -4,13 +4,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from pymongo import DESCENDING
 
-from boll_factor import is_boll_break_up, is_boll_break_down
-from database import DB_CONN
-from fractal_factor import is_fractal_up, is_fractal_down
-from macd_factor import is_macd_dead, is_macd_gold
-from rsi_factor import is_rsi_over_bought, is_rsi_over_sold
-from stock_pool_strategy import stock_pool, find_out_stocks
-from stock_util import get_trading_dates
+from utils.database import DB_CONN
+from tests.stock_pool_strategy import stock_pool, find_out_stocks
+from utils.stock_util import get_trading_dates
 
 """
 完成策略的回测，绘制以沪深300为基准的收益曲线，并计算策略评价指标：

@@ -1,7 +1,7 @@
 #  -*- coding: utf-8 -*-
 
 import schedule
-from daily_crawler import DailyCrawler
+from crawlers.daily_crawler import DailyCrawler
 import time
 from datetime import datetime
 

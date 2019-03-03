@@ -6,8 +6,8 @@ compute_pe：计算市盈率
 
 from pymongo import DESCENDING, UpdateOne
 
-from database import DB_CONN
-from stock_util import get_all_codes
+from utils.database import DB_CONN
+from utils.stock_util import get_all_codes
 
 finance_report_collection = DB_CONN['finance_report']
 daily_collection = DB_CONN['daily']

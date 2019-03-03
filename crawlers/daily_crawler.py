@@ -1,7 +1,7 @@
 #  -*- coding: utf-8 -*-
 
 from pymongo import UpdateOne
-from database import DB_CONN
+from utils.database import DB_CONN
 import tushare as ts
 from datetime import datetime
 

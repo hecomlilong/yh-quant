@@ -7,8 +7,8 @@ import tushare as ts
 from pandas.io import json
 from pymongo import UpdateOne
 
-from database import DB_CONN
-from stock_util import get_trading_dates
+from utils.database import DB_CONN
+from utils.stock_util import get_trading_dates
 import math
 
 """

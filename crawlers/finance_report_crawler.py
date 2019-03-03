@@ -9,8 +9,8 @@ import urllib3
 
 from pymongo import UpdateOne
 
-from database import DB_CONN
-from stock_util import get_all_codes
+from utils.database import DB_CONN
+from utils.stock_util import get_all_codes
 
 user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36'
 

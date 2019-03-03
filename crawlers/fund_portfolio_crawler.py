@@ -1,32 +1,40 @@
 #  -*- coding: utf-8 -*-
 
 from pymongo import UpdateOne
-from database import DB_CONN
-from tushare_base import TuShareBase
-
+from utils.database import DB_CONN
+from utils.tushare_base import TuShareBase
+from utils.stock_util import get_all_fund_codes
+from time import sleep
+import traceback
 """
-从tushare获取公募基金数据列表，包括场内和场外基金，保存到本地的MongoDB数据库中
+从tushare获取公募基金持仓数据，保存到本地的MongoDB数据库中
 """
 
 
-class FundBasicCrawler(TuShareBase):
+class FundPortfolioCrawler(TuShareBase):
     def __init__(self):
-        super(FundBasicCrawler, self).__init__()
+        super(FundPortfolioCrawler, self).__init__()
         """
         初始化
         """
 
-        # 创建fund数据集
-        self.fund = DB_CONN['fund_basic']
+        # 创建fund_portfolio数据集
+        self.fund_portfolio = DB_CONN['fund_portfolio']
 
-    def crawl(self, market='E'):
+    def crawl(self):
         """
-        抓取公募基金数据列表，包括场内和场外基金
-        :param market: 交易市场: E场内 O场外（默认E）
+        抓取公募基金持仓数据
         """
 
-        fund_df = self.pro.query('fund_basic', market=market)
-        self.save_data(df=fund_df, collection=self.fund)
+        # 获取基金代码
+        codes = get_all_fund_codes()
+        for code in codes:
+            try:
+                fund_portfolio_df = self.pro.query('fund_portfolio', ts_code=code)
+                self.save_data(df=fund_portfolio_df, collection=self.fund_portfolio)
+                sleep(1)
+            except:
+                print(traceback.print_exc())
 
     def save_data(self, df, collection, extra_fields=None):
         """
@@ -53,10 +61,11 @@ class FundBasicCrawler(TuShareBase):
             # 注意：
             # 需要在ts_code字段上增加索引，否则随着数据量的增加，
             # 写入速度会变慢，需要创建索引。创建索引需要在MongoDB-shell中执行命令式：
-            # db.fund.createIndex({'ts_code':1},{'background':true})
+            # db.fund_portfolio.createIndex({'ts_code':1},{'background':true})
             update_requests.append(
                 UpdateOne(
-                    {'ts_code': doc['ts_code']},
+                    {'ts_code': doc['ts_code'], 'ann_date': doc['ann_date'], 'end_date': doc['end_date'],
+                     'symbol': doc['symbol']},
                     {'$set': doc},
                     upsert=True)
             )
@@ -71,6 +80,5 @@ class FundBasicCrawler(TuShareBase):
 
 # 抓取程序的入口函数
 if __name__ == '__main__':
-    dc = FundBasicCrawler()
-    dc.crawl('E')  # 交易市场: E场内
-    dc.crawl('O')  # 交易市场: O场外
+    dc = FundPortfolioCrawler()
+    dc.crawl()

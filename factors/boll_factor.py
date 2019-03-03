@@ -5,8 +5,8 @@ import traceback
 from pandas import DataFrame
 from pymongo import UpdateOne, ASCENDING
 
-from database import DB_CONN
-from stock_util import get_all_codes
+from utils.database import DB_CONN
+from utils.stock_util import get_all_codes
 
 
 def compute(begin_date, end_date):
