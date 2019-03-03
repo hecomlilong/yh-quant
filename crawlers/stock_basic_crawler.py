@@ -19,8 +19,10 @@ class StockBasicCrawler(TuShareBase):
         self.stock_basic = DB_CONN['stock_basic']
 
     def crawl(self, is_hs='', exchange='', list_status='L'):
+        fields = 'ts_code,symbol,name,area,industry,fullname,enname,market' \
+                 ',exchange,curr_type,list_status,list_date,delist_date,is_hs'
         df = self.pro.query('stock_basic', is_hs=is_hs, exchange=exchange, list_status=list_status,
-                            fields='ts_code,symbol,name,area,industry,fullname,enname,market,exchange,curr_type,list_status,list_date,delist_date,is_hs')
+                            fields=fields)
         self.save_data(df=df, collection=self.stock_basic, filter_fields=['ts_code'])
 
 
