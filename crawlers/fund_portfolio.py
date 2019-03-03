@@ -11,9 +11,9 @@ import traceback
 """
 
 
-class FundPortfolioCrawler(TuShareBase):
+class FundPortfolio(TuShareBase):
     def __init__(self):
-        super(FundPortfolioCrawler, self).__init__()
+        super(FundPortfolio, self).__init__()
         """
         初始化
         """
@@ -40,5 +40,5 @@ class FundPortfolioCrawler(TuShareBase):
 
 # 抓取程序的入口函数
 if __name__ == '__main__':
-    dc = FundPortfolioCrawler()
+    dc = FundPortfolio()
     dc.crawl()

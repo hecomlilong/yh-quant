@@ -9,9 +9,9 @@ from utils.tushare_base import TuShareBase
 """
 
 
-class FundBasicCrawler(TuShareBase):
+class FundBasic(TuShareBase):
     def __init__(self):
-        super(FundBasicCrawler, self).__init__()
+        super(FundBasic, self).__init__()
         """
         初始化
         """
@@ -31,6 +31,6 @@ class FundBasicCrawler(TuShareBase):
 
 # 抓取程序的入口函数
 if __name__ == '__main__':
-    dc = FundBasicCrawler()
+    dc = FundBasic()
     dc.crawl('E')  # 交易市场: E场内
     dc.crawl('O')  # 交易市场: O场外
