@@ -50,6 +50,16 @@ def get_all_codes():
     return DB_CONN.basic.distinct('code')
 
 
+def get_all_codes_pro():
+    """
+    获取所有股票代码列表
+    :return: 股票代码列表
+    """
+
+    # 通过distinct函数拿到所有不重复的股票代码列表
+    return DB_CONN.stock_basic.distinct('ts_code')
+
+
 def get_all_fund_codes():
     """
     获取所有基金代码列表
