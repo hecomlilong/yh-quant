@@ -60,6 +60,9 @@ def get_all_codes_pro():
     return DB_CONN.stock_basic.distinct('ts_code')
 
 
+def get_all_concept():
+    return DB_CONN.concept.distinct('code')
+
 def get_all_fund_codes():
     """
     获取所有基金代码列表
