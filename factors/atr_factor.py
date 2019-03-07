@@ -3,7 +3,7 @@
 
 from utils.database import DB_CONN
 from utils.stock_util import get_all_codes_pro, get_daily_conn_name
-from pymongo import ASCENDING, UpdateOne
+from pymongo import ASCENDING
 from pandas import DataFrame
 import traceback
 from utils.tushare_base import TuShareBase
