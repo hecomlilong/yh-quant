@@ -36,12 +36,7 @@ class Suspend(TuShareBase):
         if not ts_code and not suspend_date and not resume_date:
             return
         fields = 'ts_code,suspend_date,resume_date,ann_date,suspend_reason,reason_type'
-        if ts_code:
-            df = self.pro.query('suspend', ts_code=ts_code, fields=fields)
-        else if suspend_date:
-            df = self.pro.query('suspend', suspend_date=suspend_date, fields=fields)
-        else:
-            df = self.pro.query('suspend', resume_date=resume_date, fields=fields)
+        df = self.pro.query('suspend', ts_code=ts_code, suspend_date=suspend_date, resume_date=resume_date, fields=fields)
         self.save_data(df=df, collection=self.conn, filter_fields=['ts_code', 'suspend_date'])
 
     def crawl_all(self):

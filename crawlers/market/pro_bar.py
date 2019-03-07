@@ -3,7 +3,7 @@
 import tushare as ts
 from utils.database import DB_CONN
 from utils.tushare_base import TuShareBase
-from utils.stock_util import get_all_codes_pro
+from utils.stock_util import get_all_codes_pro,get_daily_conn_name
 from datetime import datetime
 
 """
@@ -39,13 +39,13 @@ class ProBar(TuShareBase):
         close   float   收盘价
         pre_close   float   昨收价
         change  float   涨跌额
-        pct_chg float   涨跌幅 （未复权，如果是复权请用 通用行情接口 ）
+        pct_chg float   涨跌幅
         vol float   成交量 （手）
         amount  float   成交额 （千元）
         """
         if adj is None:
             return
-        self.conn = DB_CONN['daily_%s_%s' % (adj, asset)]
+        self.conn = DB_CONN[get_daily_conn_name(adj, asset)]
 
         # 取复权行情
         df = ts.pro_bar(pro_api=self.pro, ts_code=ts_code, freq=freq, adj=adj, asset=asset, start_date=start_date,

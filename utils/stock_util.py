@@ -72,6 +72,16 @@ def get_all_fund_codes():
     # 通过distinct函数拿到所有不重复的基金代码列表
     return DB_CONN.fund_basic.distinct('ts_code')
 
+def get_daily_conn_name(adj='qfq', asset='E'):
+    """
+
+    :param adj: qfq前复权 hfq后复权
+    :param asset: E股票 I沪深指数 C数字货币 F期货 FD基金 O期权，默认E
+    :return:
+    """
+    if not adj:
+        return ''
+    return 'daily_%s_%s' % (adj, asset)
 
 if __name__ == '__main__':
     get_all_codes()
