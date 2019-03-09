@@ -63,6 +63,7 @@ def get_all_codes_pro():
 def get_all_concept():
     return DB_CONN.concept.distinct('code')
 
+
 def get_all_fund_codes():
     """
     获取所有基金代码列表
@@ -72,16 +73,42 @@ def get_all_fund_codes():
     # 通过distinct函数拿到所有不重复的基金代码列表
     return DB_CONN.fund_basic.distinct('ts_code')
 
-def get_daily_conn_name(adj='qfq', asset='E'):
+
+def get_daily_conn_name(adj='qfq', asset='E', freq='D'):
     """
 
     :param adj: qfq前复权 hfq后复权
     :param asset: E股票 I沪深指数 C数字货币 F期货 FD基金 O期权，默认E
+    :param freq: 数据频度 ：1MIN表示1分钟（1/5/15/30/60分钟） D日线 ，默认D， W周线，M月线
     :return:
     """
     if not adj:
         return ''
-    return 'daily_%s_%s' % (adj, asset)
+    return 'daily_%s_%s_%s' % (adj, asset, freq)
+
+
+def get_codes(ts_code=''):
+    if ts_code:
+        if isinstance(ts_code, str):
+            codes = [ts_code]
+        elif isinstance(ts_code, list):
+            codes = ts_code
+        else:
+            codes = []
+    else:
+        # 获取所有股票代码
+        codes = get_all_codes_pro()
+    return codes
+
+
+def get_begin_end_date(begin_date='', end_date=''):
+    if not begin_date and not end_date:
+        # 当前日期
+        now = datetime.now()
+        begin_date = now.strftime('%Y%m%d')
+        end_date = now.strftime('%Y%m%d')
+    return begin_date, end_date
+
 
 if __name__ == '__main__':
     get_all_codes()

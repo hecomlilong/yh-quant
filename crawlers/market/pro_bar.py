@@ -3,13 +3,14 @@
 import tushare as ts
 from utils.database import DB_CONN
 from utils.tushare_base import TuShareBase
-from utils.stock_util import get_all_codes_pro,get_daily_conn_name
+from utils.stock_util import get_all_codes_pro, get_daily_conn_name, get_begin_end_date
 from datetime import datetime
 
 """
 更新时间：股票和指数通常在15点～17点之间，数字货币实时更新，具体请参考各接口文档明细。
 描述：目前整合了股票（未复权、前复权、后复权）、指数、数字货币、ETF基金、期货、期权的行情数据，未来还将整合包括外汇在内的所有交易行情数据，同时提供分钟数据。
 """
+
 
 class ProBar(TuShareBase):
     def __init__(self):
@@ -45,24 +46,26 @@ class ProBar(TuShareBase):
         """
         if adj is None:
             return
-        self.conn = DB_CONN[get_daily_conn_name(adj, asset)]
+        self.conn = DB_CONN[get_daily_conn_name(adj, asset, freq)]
 
         # 取复权行情
         df = ts.pro_bar(pro_api=self.pro, ts_code=ts_code, freq=freq, adj=adj, asset=asset, start_date=start_date,
                         end_date=end_date, ma=ma, factors=factors)
         self.save_data(df=df, collection=self.conn, filter_fields=['ts_code', 'trade_date'])
 
-    def crawl_all_stock(self, start_date='', end_date=''):
-        if start_date == '' and end_date == '':
-            # 当前日期
-            now = datetime.now()
-            start_date = now.strftime('%Y%m%d')
-            end_date = now.strftime('%Y%m%d')
+    def crawl_all_stock(self, start_date='', end_date='', freq='D'):
+        start_date, end_date = get_begin_end_date(start_date, end_date)
         codes = get_all_codes_pro()
-        for freq_i in ['D','W','M']:
+        if isinstance(freq, list):
+            for freq_i in freq:
+                for code in codes:
+                    self.crawl(ts_code=code, freq=freq_i, start_date=start_date, end_date=end_date)
+        elif isinstance(freq, str):
             for code in codes:
-                self.crawl(ts_code=code, freq=freq_i, start_date=start_date, end_date=end_date)
+                self.crawl(ts_code=code, freq=freq, start_date=start_date, end_date=end_date)
+
 
 if __name__ == '__main__':
     stock = ProBar()
-    stock.crawl(ts_code='000001.SZ')
+    # stock.crawl(ts_code='000001.SZ')
+    stock.crawl_all_stock(start_date='20190101', end_date='2019-03-08')

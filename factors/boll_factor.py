@@ -6,25 +6,32 @@ from pandas import DataFrame
 from pymongo import UpdateOne, ASCENDING
 
 from utils.database import DB_CONN
-from utils.stock_util import get_all_codes
+from utils.stock_util import get_codes, get_begin_end_date,get_daily_conn_name
 
 
-def compute(begin_date, end_date):
+def compute_boll(ts_code='', begin_date='', end_date=''):
     """
     计算指定日期内的Boll突破上轨和突破下轨信号，并保存到数据库中，
     方便查询使用
+    :param ts_code: 股票代码
     :param begin_date: 开始日期
     :param end_date: 结束日期
     """
 
     # 获取所有股票代码
-    all_codes = get_all_codes()
+    codes = get_codes(ts_code)
+
+    begin_date, end_date = get_begin_end_date(begin_date, end_date)
+
+    name = 'boll'
+
+    conn_name = get_daily_conn_name('qfq', 'E', 'D')
 
     # 计算每一只股票的Boll信号
-    for code in all_codes:
+    for code in codes:
         try:
             # 获取后复权的价格，使用后复权的价格计算BOLL
-            daily_cursor = DB_CONN['daily_hfq'].find(
+            daily_cursor = DB_CONN[conn_name].find(
                 {'code': code, 'date': {'$gte': begin_date, '$lte': end_date}, 'index': False},
                 sort=[('date', ASCENDING)],
                 projection={'date': True, 'close': True, '_id': False}
