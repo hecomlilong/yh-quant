@@ -9,7 +9,7 @@ from pandas import DataFrame
 import traceback
 
 
-class MACD:
+class MACD(object):
     name = 'macd'
 
     def __init__(self):
@@ -107,51 +107,46 @@ class MACD:
                 df_daily_dead = df_daily[(df_daily['pre_delta'] >= 0) & (df_daily['delta'] < 0)]
 
                 # 保存结果到数据库
-                update_requests = []
+                docs = []
                 for date in df_daily_gold.index:
                     # 保存时以code和date为查询条件，做更新或者新建，所以对code和date建立索引
                     # 通过signal字段表示金叉还是死叉，gold表示金叉
-                    update_requests.append(UpdateOne(
-                        {'code': code, 'date': date},
-                        {'$set': {'code': code, 'date': date, 'signal': 'gold'}},
-                        upsert=True))
+                    docs.append({'ts_code': code, 'trade_date': date, 'signal': 'gold'})
 
                 for date in df_daily_dead.index:
                     # 保存时以code和date为查询条件，做更新或者新建，所以对code和date建立索引
                     # 通过signal字段表示金叉还是死叉，dead表示死叉
-                    update_requests.append(UpdateOne(
-                        {'code': code, 'date': date},
-                        {'$set': {'code': code, 'date': date, 'signal': 'dead'}},
-                        upsert=True))
+                    docs.append({'ts_code': code, 'trade_date': date, 'signal': 'dead'})
 
-                if len(update_requests) > 0:
-                    update_result = DB_CONN['macd'].bulk_write(update_requests, ordered=False)
-                    print('Save MACD, 股票代码：%s, 插入：%4d, 更新：%4d' %
-                          (code, update_result.upserted_count, update_result.modified_count), flush=True)
+                # 将信号保存到数据库
+                ts_base = TuShareBase()
+                ts_base.save_data(docs=docs, collection=DB_CONN[self.name],
+                                  filter_fields=['ts_code', 'trade_date'])
             except:
                 print('错误发生： %s' % code, flush=True)
                 traceback.print_exc()
 
-    def is_macd_gold(code, date):
+    def is_macd_gold(self, code, date):
         """
         判断某只股票在某个交易日是否出现MACD金叉信号
         :param code: 股票代码
         :param date: 日期
         :return: True - 有金叉信号，False - 无金叉信号
         """
-        count = DB_CONN['macd'].count({'code': code, 'date': date, 'signal': 'gold'})
+        count = DB_CONN[self.name].count({'ts_code': code, 'trade_date': date, 'signal': 'gold'})
         return count == 1
 
-    def is_macd_dead(code, date):
+    def is_macd_dead(self, code, date):
         """
         判断某只股票在某个交易日是否出现MACD死叉信号
         :param code: 股票代码
         :param date: 日期
         :return: True - 有死叉信号，False - 无死叉信号
         """
-        count = DB_CONN['macd'].count({'code': code, 'date': date, 'signal': 'dead'})
+        count = DB_CONN[self.name].count({'ts_code': code, 'trade_date': date, 'signal': 'dead'})
         return count == 1
 
 
 if __name__ == '__main__':
-    compute_macd('2015-01-01', '2015-12-31')
+    macd = MACD()
+    macd.compute('000001.SZ', '2019-01-01', '2019-12-31')
