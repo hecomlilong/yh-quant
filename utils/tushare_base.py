@@ -2,6 +2,7 @@
 
 import tushare as ts
 from pymongo import UpdateOne, ASCENDING
+from pandas import DataFrame
 
 
 class TuShareBase:
@@ -18,7 +19,7 @@ class TuShareBase:
             return False
         return collection.create_index(index_fields)
 
-    def save_data(self, df, collection, docs, filter_fields=None, extra_fields=None):
+    def save_data(self, df=None, collection=None, docs=None, filter_fields=None, extra_fields=None):
         """
         将从网上抓取的数据保存到本地MongoDB中
 
@@ -29,7 +30,7 @@ class TuShareBase:
         :param extra_fields: 除了数据中保存的字段，需要额外保存的字段
         """
 
-        if filter_fields is None:
+        if filter_fields is None or collection is None:
             return
 
         # 创建索引
@@ -44,7 +45,7 @@ class TuShareBase:
         update_requests = []
 
         # 将DataFrame中的行情数据，生成更新数据的请求
-        if df:
+        if isinstance(df, DataFrame):
             for df_index in df.index:
                 # 将DataFrame中的一行数据转dict
                 doc = dict(df.loc[df_index])
@@ -63,7 +64,7 @@ class TuShareBase:
                     UpdateOne(m_filter, {'$set': doc}, upsert=True)
                 )
 
-        elif docs:
+        elif isinstance(docs, list):
             for doc in docs:
                 # 组装mongo数据过滤条件
                 m_filter = {}

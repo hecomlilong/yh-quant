@@ -107,6 +107,8 @@ def get_begin_end_date(begin_date='', end_date=''):
         now = datetime.now()
         begin_date = now.strftime('%Y%m%d')
         end_date = now.strftime('%Y%m%d')
+    begin_date = ''.join(begin_date.split("-"))
+    end_date = ''.join(end_date.split("-"))
     return begin_date, end_date
 
 
